@@ -10,29 +10,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-## 1. (3p) Data:
-
-Please find your original dataset or datasets; and describe your data in
-the first step
-
-As real data, the data of the series and movies I watched, my rating(0
-to 10), the date I gave the score, title, Url, imdb average (0 to 10),
-runtime(min), release year, genres, Total number of votes , Released
-year, Director.
-
-```         
-```
-
-## 2. (3p) Exploratory and descriptive data analysis:
-
-Use "Exploratory and descriptive data analysis". Talk about your
-categorical and quantitative data or your ordinal variables etc. Write
-down your comments
-
-```{r pressure, echo=FALSE}
-required_packages <- c("rstudioapi", "ggplot2", "dplyr", "scales")
+required_packages <- c("rstudioapi", "ggplot2", "dplyr", "scales", "MASS", "lubridate", "car")
 
 for (package in required_packages) {
   if (!require(package, character.only = TRUE)) {
@@ -43,40 +21,61 @@ for (package in required_packages) {
     library(package, character.only = TRUE)
   }
 }
+```
+
+## 1. (3p) Data:
+
+Please find your original dataset or datasets; and describe your data in
+the first step
+
+The data set includes the scores I have given to the movies and series I have watched since 2019, the average of imdb users, the genre of the movie and the series, the director, the release year, my voting date, id, duration, name.
+
+https://www.imdb.com/user/ur108869947/
+```{r pressure, echo=FALSE}  
 
 my_data <- read.csv('ratings.csv')
+
+print(head(my_data, 10))
+```
+
+## 2. (3p) Exploratory and descriptive data analysis:
+
+Use "Exploratory and descriptive data analysis". Talk about your
+categorical and quantitative data or your ordinal variables etc. Write
+down your comments
+
+```{r pressure, echo=FALSE}
+
+
+colnames(my_data)
 
 
 ```
 
-Const : ('tt1014759', tt0101540, ...)
-Your.Rating: ('5', '8', ...)
+Const : ('tt1014759', tt0101540, ...) Your.Rating: ('5', '8', ...)
+
 Date.Rated: ('1/16/2020', '9/12/2022', ...), (mm, dd, yyyy)
-Title: ('Alice in Wonderland', 'Cape Fear', ...)
-URL: ('https://www.imdb.com/title/tt1014759/', 'https://www.imdb.com/title/tt0101540/', ...)
-Title.Type: ('movie', 'movie', ...)
-IMDb.Rating: ('6.4', '7.3', ...)
-Runtime..mins.: ('108', '128', ...)
-Year: ('2010', '1991', ...)
-Genres: ('Adventure, Family, Fantasy, Mystery', 'Crime, Thriller', ...)
-Num.Votes: ('426039', '204632', ...)
-Release.Date: ('2/25/2010', '10/6/1991', ...), (mm, dd, yyyy)
-Directors: ('Tim Burton', 'Martin Scorsese', ...)
+Title:('Alice in Wonderland', 'Cape Fear', ...)
 
-Categorical Variables:
-'Const', 'Title', 'Title.Type', 'Genres'
+URL:('<https://www.imdb.com/title/tt1014759/>','<https://www.imdb.com/title/tt0101540/>',...)
+Title.Type: ('movie','movie', ...) IMDb.Rating: ('6.4', '7.3', ...)
+Runtime..mins.: ('108','128', ...) Year: ('2010', '1991', ...) Genres:
+('Adventure, Family,Fantasy, Mystery', 'Crime, Thriller', ...)
+Num.Votes: ('426039','204632', ...) Release.Date:
+('2/25/2010','10/6/1991', ...), (mm, dd,yyyy) Directors: ('Tim Burton',
+'Martin Scorsese', ...)
 
-Ordinal Variables:
-'Your.Rating'
+Categorical Variables: 'Const', 'Title', 'Title.Type', 'Genres'
 
-Interval Variables:
-'Date.Rated', 'Runtime..mins.', 'Year', 'Num.Votes', 'Release.Date'
+Ordinal Variables: 'Your.Rating'
 
-Quantitative Variable:
-'IMDb.Rating'
+Interval Variables: 'Date.Rated', 'Runtime..mins.', 'Year', 'Num.Votes',
+'Release.Date'
+
+Quantitative Variable: 'IMDb.Rating'
 
 ```{r}
-summary(my_file$IMDb.Rating)
+
 ## head(dFile)
 ```
 
@@ -87,7 +86,7 @@ techniques" which will help you understand your data further
 (distribution, outliers, variability, etc). Use 2 of the visualizations
 to compare two groups (like female/male; smoker/non-smoker etc).
 
-```{r} 
+```{r}
 
 # Rename the columns to match the dataset
 colnames(my_data) <- c("Const", "Your_Rating", "Date_Rated", "Title", "URL", "Title_Type", "IMDb_Rating", "Runtime_mins", "Year", "Genres", "Num_Votes", "Release_Date", "Directors")
@@ -134,55 +133,219 @@ Build '2 Confidence Intervals' step by step: Calculate the mean, then
 standard error, and then the CI. Make "clear comments" about your
 findings
 
-```         
+```{r}
+
+mean_rating <- mean(my_data$`Your_Rating`)
+n_myrating <- length(my_data$`Your_Rating`)
+standard_error_myrating <- sd(my_data$`Your_Rating`) / sqrt(n)
+
+confidence_level_myrating <- 0.95
+critical_value_myrating <- qt((1 + confidence_level_myrating) / 2, df = n - 1)
+margin_of_error_myrating <- critical_value_myrating * standard_error_myrating
+confidence_interval_myrating <- c(mean_rating - margin_of_error_myrating, mean_rating + margin_of_error_myrating)
+
+cat("Mean Rating for My Rating:", mean_rating, "\n", 
+    "Standard Error for My Rating:", standard_error_myrating, "\n", 
+    "Confidence Interval (95%) for My Rating:", confidence_interval_myrating[1], "-", confidence_interval_myrating[2])
+
+
+mean_imdb <- mean(my_data$`IMDb_Rating`)
+
+n2 <- length(my_data$`IMDb_Rating`)
+standard_error_imdb <- sd(my_data$`IMDb_Rating`) / sqrt(n2)
+
+confidence_level <- 0.95
+critical_value <- qt((1 + confidence_level) / 2, df = n - 1)
+margin_of_error_imdb <- critical_value * standard_error_imdb
+confidence_interval_imdb <- c(mean_imdb - margin_of_error_imdb, mean_imdb + margin_of_error_imdb)
+
+
+cat("Mean IMDb Rating:", mean_imdb, "\n", 
+    "Standard Error (IMDb):", standard_error_imdb, "\n", 
+    "Confidence Interval (95%) for IMDb Rating:", confidence_interval_imdb[1], "-", confidence_interval_imdb[2])
+
+
+
+
+
 ```
+
+// Comment For Your_Rating
+
+'Mean Rating': The average rating for 'My Rating' is found to be
+6.635514. This indicates that the ratings, on average, are at a moderate
+level.
+
+'Standard Error': The standard error for 'My Rating' is calculated as
+0.1159225. The standard error measures how much the sample mean deviates
+from the true population mean. A lower standard error indicates a better
+representation of the population by the sample.
+
+'Confidence Interval': The 95% confidence interval for 'My Rating' is
+between 6.407447 and 6.863581. This represents the estimated range for
+the population mean based on the sample. In other words, we can say with
+a certain level of confidence that the true population mean falls within
+this interval.
+
+// Comment For IMDb_Rating
+
+'Mean IMDb Rating': The average rating for IMDb is found to be 7.74704.
+This indicates that, on average, IMDb users give movies a moderate
+rating.
+
+'Standard Error (IMDb)': The standard error for IMDb ratings is
+calculated as 0.0568925. The standard error measures how much the sample
+IMDb ratings deviate from the true population mean. A lower standard
+error indicates a better representation of the population by the sample.
+
+'Confidence Interval (95%) for IMDb Rating': The 95% confidence interval
+for IMDb ratings is between 7.63511 and 7.858971. This represents the
+estimated range for the population IMDb ratings based on the sample. In
+other words, we can say with a certain level of confidence that the true
+population IMDb rating falls within this interval.
 
 ## 5. (3p) Transformation:
 
-Implement one transformation (log transformation, Box-Cok
-transformation, etc) for one of your quantitative variables, which is
-not normally distributed; but will be normal or more normal, after the
-transformation
+Implement one transformation (log transformation, Box-Cok transformation,
+etc) for one of your quantitative variables, which is not normally
+distributed; but will be normal or more normal, after the transformation
 
-```         
+```{r}
+
+withoutoutliers <- subset(my_data, 1 < my_data$Your.Rating & my_data$Your.Rating < 9)
+transformed_data <- log(withoutoutliers$Your.Rating)
+
+hist(transformed_data)
+hist(my_data$Your.Rating)
 ```
 
 ## 6. (2p every item if not indicated) t-test (Welch t-test or Wilcoxon rank-sum test or Paired t-test)
 
- Implement a single t-test for one of your "normally or
-not-normally distributed" variable: a. Aim In words, what is your
-objective here? b. Hypothesis and level of significance: Write your
-hypothesis in scientific form and determine the level of singnificance.
-c. Assumption Check (4p): Is your data independent or dependent? Tell
-why you chose this test. Check the required assumptions statistically
-and "comment on each of them is a must!". d. Indicate "which test you
-choose" "for what reason" e. Result: Give the output of the test and
-write down the result (ex: since p value is less /greater than alpha, I
-reject/not reject the null hypothesis). f. Conclusion (4p): You got your
-result in item e. Write down the conclusion of your result, in such a
-way that, the reader who doesn't know any statistics can understand your
-findings. g. What can be Type-1 and Type-2 error here? Not definition!
-Tell these situations in terms of your data. (4p
+Implement a single t-test for one of your "normally or not-normally
+distributed" variable: 
+a. Aim In words, what is your objective here? 
 
-```         
+**The objective here is to assess whether there is a statistically significant difference in the "Your.Rating" values between the 2020 year and 2019 year datasets.**
+
+b.Hypothesis and level of significance: Write your hypothesis in
+scientific form and determine the level of singnificance. 
+
+**The null hypothesis (H0) can be stated as: There is no difference in the "Your.Rating" values between the year20 and year19 datasets.**
+**The alternative hypothesis (H1) can be stated as: There is a difference in the "Your.Rating" values between the year20 and year19 datasets.**
+**The level of significance, denoted as α (alpha), determines the threshold for rejecting the null hypothesis. It is not mentioned in the given information, so you would need to choose a specific value for α, such as α = 0.05 (5% significance level).**
+
+c. Assumption Check (4p): Is your data independent or dependent? Tell why you chose
+this test. Check the required assumptions statistically and "comment on
+each of them is a must!". 
+**The Wilcoxon rank-sum test (also known as the Mann-Whitney U test) assumes the following:**
+
+**1. Independence: The observations in one group are independent of the observations in the other group. You would need to ensure that the data from the year20 and year19 datasets are independent. If the data is collected from two separate and unrelated groups, independence is typically assumed.**
+
+**2. Random Sampling: The data should be a random sample from the population of interest. If the data satisfies this assumption, it supports generalizing the results to the larger population.**
+
+**3. Ordinal Data: The test assumes that the "Your.Rating" values are at least ordinal, meaning they can be ranked.**
+
+**4. Similar Shape of Distributions: The shape of the distributions of the "Your.Rating" values in both groups should be similar. However, the Wilcoxon rank-sum test is relatively robust to violations of this assumption, meaning it can still provide valid results even if the distributions differ slightly.**
+
+d. Indicate "which test you choose" "for what reason" 
+
+**Based on the provided output, the Wilcoxon rank-sum test (Mann-Whitney U test) with continuity correction was performed. This test is appropriate when comparing two independent groups and assessing whether there is a difference in the distributions of a continuous or ordinal variable. The test is nonparametric, meaning it makes no assumptions about the underlying distribution of the data.**
+
+e. Result: Give the output of the test and write down the result
+(ex: since p value is less /greater than alpha, I reject/not reject the
+null hypothesis). 
+
+**Based on the Wilcoxon rank sum test with continuity correction, the test statistic (W) is calculated as 3683.5 and the p-value is determined as 0.0001249.**
+
+f. Conclusion (4p): You got your result in item e.Write down the conclusion of your result,
+in such a way that, the reader who doesn't know any statistics can understand your findings. 
+
+**Since the p-value (0.0001249) is less than the chosen significance level (α), such as α = 0.05, we reject the null hypothesis. This means that there is sufficient evidence to conclude that there is a statistically significant difference in the "Your.Rating" values between the year20 and year19 datasets. The alternative hypothesis, which states that there is a true location shift (difference) between the groups, is supported by the data.**
+
+g. What can be Type-1 and Type-2 error here? Not definition! Tell these
+situations in terms of your data. (4p)
+
+**Type-1 error: This refers to rejecting the null hypothesis when it is actually true. In terms of the data, a Type-1 error would occur if we concluded that there is a difference in the "Your.Rating" values between the year20 and year19 datasets, when in reality there is no true difference.**
+**Type-2 error: This refers to failing to reject the null hypothesis when it is actually false. In terms of the data, a Type-2 error would occur if we failed to detect a difference in the "Your.Rating" values between the year20 and year19 datasets, even though there is a true difference.**
+
+```{r}
+
+my_data
+my_data$Date.Rated
+
+my_data$Date.Rated <- as.Date(my_data$Date.Rated, format = "%m/%d/%Y")
+
+year20 <- subset(my_data, lubridate::year(Date.Rated) == 2020)
+year19 <- subset(my_data, lubridate::year(Date.Rated) == 2019)
+
+result <- wilcox.test(year20$Your.Rating, year19$Your.Rating)
+
+print("Wilcoxon Rank-Sum Test Sonucu:")
+print("Statistic:", result$statistic)
+
+print("p-value:", result$p.value)
+
+result
+
 ```
+
 
 ## 7. (2p every item if not indicated) Fisher's exact test for count data
 
 a.  Aim In words, what is your objective? Provide the contingency table
     here.
+    
+    The objective is to analyze the relationship between the directors 
+    Quentin Tarantino and Stanley Kubrick and the genres of movies they have directed.
+    The aim is to determine if there is a significant association between the two variables.
+
 b.  Hypothesis and level of significance: Write your hypothesis in
     scientific form and determine the level of singnificance.
+    
+    Null hypothesis (H0): There is no association between the directors 
+    Quentin Tarantino and Stanley Kubrick and the genres of movies they have directed.
+    Alternative hypothesis (HA): There is an association between the directors 
+    Quentin Tarantino and Stanley Kubrick and the genres of movies they have directed.
+    The level of significance (α) is typically set at 0.05.
+    
 c.  Result: Give the output of the test and write down the result (ex:
     since p value is less /greater than alpha, I reject/not reject the
     null hypothesis).
+    
+     The Fisher's exact test was conducted on the contingency table and resulted in a p-value of 0.7146.
+     Since the p-value (0.7146) is greater than the chosen level of significance (α = 0.05), 
+     i fail to reject the null hypothesis. Therefore, there is not enough evidence to
+     suggest a significant association between the directors 
+     Quentin Tarantino and Stanley Kubrick and the genres of movies they have directed.
+    
 d.  Conclusion (4p): You got your result in item c. Write down the
     conclusion of your result, in such a way that, the reader who
     doesn't know any statistics can understand your findings.
+    
+     Based on the statistical analysis, we did not find a significant association
+     between the directors Quentin Tarantino and Stanley Kubrick and the genres of
+     movies they have directed. This suggests that the choice of directors does not
+     strongly influence the genres of movies they direct.
+    
 e.  Odds Ratio (4p): Comment about the odds ratio, what does it
     indicate?
+    
+    Since the association was not found to be significant,
+    the odds ratio is not meaningful in this context.
 
-```         
+```{r}
+
+selected_data <- my_data[my_data$Directors %in% c("Quentin Tarantino", "Stanley Kubrick"), c("Directors", "Genres")]
+
+contingency_table <- table(selected_data$Directors, selected_data$Genres)
+contingency_table
+
+fisher_test_result <- fisher.test(contingency_table, simulate.p.value = TRUE)
+
+print("------------------------------------")
+print(fisher_test_result)
+
+
 ```
 
 ## 8. (2p every item if not indicated) ANOVA and Tukey Test
@@ -206,29 +369,159 @@ g.  Conclusion of Tukey (4p): You got your result in item f. Write down
     the conclusion of your result, in such a way that, the reader who
     doesn't know any statistics can understand your findings.
 
-```         
+```{r}
+
+# ANOVA
+model <- lm(Your.Rating ~ Directors, data = my_data)
+anova_result <- anova(model)
+p_value <- anova_result$`Pr(>F)`[1]  # P-value for the main effect of Directors
+alpha <- 0.05  # Level of significance
+
+# Check assumptions
+# Normality
+
+# Filter directors with at least 3 films
+filtered_directors <- names(table(my_data$Directors))[table(my_data$Directors) >= 3]
+
+# Shapiro-Wilk test for selected directors
+shapiro_test <- lapply(split(my_data$Your.Rating, my_data$Directors), function(x) {
+  if (length(unique(x)) > 1 && length(x) >= 3) {
+    shapiro.test(x)
+  } else {
+    NA
+  }
+})
+
+# Create ANOVA model
+model <- lm(Your.Rating ~ Directors, data = my_data)
+
+# Homogeneity of variances
+levene_test <- leveneTest(Your.Rating ~ Directors, data = my_data)
+
+# Tukey test
+tukey_result <- TukeyHSD(aov(model))
+
+# ANOVA Result
+if (p_value < alpha) {
+  print("Since p-value is less than alpha, we reject the null hypothesis.")
+} else {
+  print("Since p-value is greater than or equal to alpha, we fail to reject the null hypothesis.")
+}
+
+# Conclusion of ANOVA
+if (p_value < alpha) {
+  print("There is a significant difference in the ratings between the groups of movies directed by different directors.")
+} else {
+  print("There is not enough evidence to suggest a significant difference in the ratings between the groups of movies directed by different directors.")
+}
+
+# Tukey Test Result
+##print(tukey_result, max.print = 10)
+
+# Conclusion of Tukey Test
+significant_comparisons <- tukey_result$`Directors`[, 4] < alpha
+significant_pairs <- rownames(tukey_result$`Directors`)[significant_comparisons]
+non_significant_pairs <- rownames(tukey_result$`Directors`)[!significant_comparisons]
+
+if (length(significant_pairs) > 0) {
+  print(paste("Based on the Tukey test, there is a significant difference in the ratings between the following groups:",
+              paste(significant_pairs[0:10], collapse = ", ")))
+} else {
+  print("Based on the Tukey test, there is no significant difference in the ratings between any pair of groups.")
+}
+if (length(non_significant_pairs) > 0) {
+  print(paste("There is no significant difference in the ratings between the following groups:",
+              paste(non_significant_pairs[0:10], collapse = ", ")))
+}
+
+
 ```
 
 ## 9. (2p every item) Multiple Linear Regression
 
 a.  Aim In words, what is your objective here? Not definition, talk
     about your own aim/problem.
+    
+    The aim is to determine whether the "Directors" variable has an effect on "Num Votes".
+    
 b.  Regression Equation: Multiple linear regression (MLR) is a
     statistical technique that uses several explanatory variables to
     predict the outcome of a response variable. Which ones are your
     explanatory variables and which one is your response variable? Write
     down the "statistical/mathematical equation" of your regression
     function using those variables and the parameters.
+    
+    Num Votes = β₀ + β₁ * Director_1 + β₂ * Director_2 + ... + βₙ * Director_n + ɛ
+    Here, the response variable is "Num Votes" and the explanatory variable is "Directors".
+    
 c.  Hypothesis and level of significance: Write your hypothesis in
     scientific form and determine the level of singnificance.
+    
+    Null Hypothesis (H₀): The "Directors" variable has no effect on the "Num Votes".
+    Alternative Hypothesis (H₁): The "Directors" variable has an effect on the "Num Votes".
+    Level of Significance (α): Typically set at 0.05 (5%).
+    
 d.  Find the Best Model: Use step function and find the best model,
     describe the reason which makes it the best one.
+    
+    Residuals vs Fitted: This plot helps evaluate the linearity assumption by checking for any patterns or deviations in the         residuals as the fitted values change. A randomly scattered pattern around the horizontal line indicates a good fit.
+
+    Normal Q-Q: This plot assesses the normality assumption by comparing the distribution of the residuals to a theoretical          normal distribution. If the points closely follow the diagonal line, it suggests that the residuals are normally                 distributed.
+
+    Scale Location: This plot checks for homoscedasticity by examining the spread of the residuals across different levels of the     fitted values. Ideally, the points should exhibit a constant spread along the horizontal line, indicating equal variability.
+
+    Residuals vs Leverage: This plot identifies influential observations or outliers by assessing the leverage of each data point     and its corresponding residual. Outliers or influential points have high leverage and may significantly impact the model's       fit.
+    
 e.  Assumption Check (4p): Check the required assumptions statistically,
     "comment on each of them is a must!".
+    
+    1. Linearity: The relationship between the explanatory and response variable should be linear.
+    
+    
+    2. Independence: The residuals should be independent of each other.
+    This assumption is typically satisfied if the data is collected through random sampling or experimental design.
+
+    3. Homoscedasticity: The variability of the residuals should be constant across all levels of the explanatory variable(s).
+    
+
+    4. Normality: The residuals should follow a normal distribution.
+   
+    
 f.  Result: Give the output of the best model and write down the result.
+
+    Based on the provided information, the best model is a linear regression model with the formula "Num.Votes ~ Directors" to       predict the number of votes based on the directors. The output of the best model is as follows:
+
+    The intercept (Intercept) is 384,115 with a standard error of 78,347, and it is statistically significant (p < 0.001).
+
+    The coefficients for the directors represent their estimated effects on the number of votes. For example, the coefficient for     "DirectorsAdam McKay" is 175,298 with a standard error of 436,219 and it is not statistically significant (p = 0.688).
+
+    The Multiple R-squared value is 0.706, indicating that approximately 70.6% of the variance in the number of votes is             explained by the model. The Adjusted R-squared value is 0.3231, suggesting that around 32.31% of the variance is accounted       for after adjusting for the number of predictors in the model.
+
+    The F-statistic is 1.844 with a p-value of 9.014e-05, indicating that the overall model is statistically significant.
+
+    The residual standard error is 429,100, which represents the standard deviation of the residuals.
+
+    In summary, the best model suggests that there is a significant relationship between the directors and the number of votes,      although the individual coefficients for the directors are mostly not statistically significant. The model explains a            moderate amount of the variance in the number of votes.
+  
+
 g.  Conclusion (4p): You got your result in item f. Write down the
     conclusion of your result, in such a way that, the reader who
     doesn't know any statistics can understand your findings.
+    
+    Based on the analysis, the best MLR model suggests that the "Directors" variable has a significant effect on the "Num Votes" (p <     0.05). The model provides valuable information for predicting the number of votes based on the directors of the movies. However,      it is important to note that other factors not included in the model may also contribute to the number of votes. Further analysis     and consideration of additional variables may enhance the predictive power of the model.
 
-```         
+```{r}
+
+library(car)
+
+mlr_model <- lm(Num.Votes ~ Directors, data = my_data)
+
+best_model <- step(mlr_model)
+
+plot(best_model)
+
+summary(best_model)
+
 ```
+
+## Thanks for All :)
